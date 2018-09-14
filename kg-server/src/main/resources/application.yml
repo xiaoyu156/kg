@@ -1,0 +1,26 @@
+spring:
+    datasource:
+        name: test
+        url: jdbc:mysql://localhost:3306/kg?useUnicode=true&characterEncoding=UTF-8&useSSL=false
+        username: root
+        password: admin
+        driver-class-name: com.mysql.jdbc.Driver
+
+    jpa:
+      database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+      show-sql: true
+      hibernate:
+        ddl-auto: update
+logging:
+  config: classpath:log4j2-test.xml
+system:
+  serviceTarget: "http://192.168.13.17:8000"
+  familyNamePath: "F:\\work\\EXCEL格式的百家姓列表.pdf"
+  serviceUrl: { }
+server:
+  servlet:
+    path: /api
+  port: 8080
+
+
+
