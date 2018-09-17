@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
 
 import static iie.ac.cn.kgserver.config.Constant.DEDUCTION_ELEMENT_SEPARATOR;
 import static iie.ac.cn.kgserver.config.Constant.DEDUCTION_TYPE_SEPARATOR;
@@ -86,35 +85,84 @@ public class DeductionServiceImpl extends BaseService implements IDeductionServi
      * @return iie.ac.cn.kgserver.model.DeductionResult
      * @date 2018/9/13 0013 下午 15:03
      */
-    private DeductionResult deduction(List<DeductionType> deductionTypeList, RootMap rootMap) {
+    public DeductionResult deduction(List<DeductionType> deductionTypeList, RootMap rootMap) {
         int sum = 0;
         for (DeductionType deductionType : deductionTypeList) {
             log.info("解析演绎类型：" + deductionType);
             Set<DeductionRule> deductionRuleSet = deductionType.getDeductionRuleSet();
             List<String> keywords = new ArrayList<>();
             for (DeductionRule deductionRule : deductionRuleSet) {
-                ArrayBlockingQueue<String> queue = new ArrayBlockingQueue<>(100);
                 String ruleContent = deductionRule.getRuleContent();
                 //以组合类型分开
                 String[] typeTemp = ruleContent.split(DEDUCTION_TYPE_SEPARATOR);
+
+                List<List<String>> cartansionParam = new ArrayList<>();
+                List<String>[] familyArray = new List[2];
+                familyArray[0] = new ArrayList<>();
+                familyArray[1] = new ArrayList<>();
+                List<String>[] lastArray = new List[2];
+                lastArray[0] = new ArrayList<>();
+                lastArray[1] = new ArrayList<>();
+                List<String> other = new ArrayList<>();
                 for (String rule : typeTemp) {
                     final String[] split = rule.split(DEDUCTION_ELEMENT_SEPARATOR);
-                    for (int j = 0; j < split.length; j++) {
-                        String d = split[j] + j;
-                        queue.add(d);
+                    for (String aSplit : split) {
+                        String element = aSplit;
+                        String regex1 = "F";
+                        String regex2 = "L";
+                        if (element.contains(regex1)) {
+                            for (int i = 1; i <= rootMap.getFamilyNum(); i++) {
+                                String tempStr = element + i;
+                                System.out.println(tempStr);
+                                List<String> temp = rootMap.getRootByKey(tempStr);
+                                System.out.println(temp);
+                                if (i == 1) {
+                                    familyArray[0].addAll(temp);
+                                }
+                                if (i == 2) {
+                                    familyArray[1].addAll(temp);
+                                }
+                            }
+                        } else if (element.contains(regex2)) {
+                            for (int i = 1; i <= rootMap.getLastNum(); i++) {
+                                String tempStr = element + i;
+                                List<String> temp = rootMap.getRootByKey(tempStr);
+                                if (i == 1) {
+                                    lastArray[0].addAll(temp);
+                                }
+                                if (i == 2) {
+                                    lastArray[1].addAll(temp);
+                                }
+                            }
+                        } else {
+                            List<String> temp = rootMap.getRootByKey(element);
+                            if (!temp.isEmpty())
+                                other.addAll(temp);
+                        }
+
                     }
                 }
-                List<List<String>> param = new ArrayList<>();
-                for (int i = 0; i < queue.size(); i++) {
-                    String element = queue.peek();
-                    List<String> list = rootMap.getRootByKey(element);
-                    param.add(list);
+                if (!familyArray[0].isEmpty() && familyArray[0].size() > 0) {
+                    cartansionParam.add(familyArray[0]);
                 }
-                final List<String> result = CartesianProduct.cartesionProduct(param);
+                if (!familyArray[1].isEmpty() && familyArray[1].size() > 0) {
+                    cartansionParam.add(familyArray[1]);
+                }
+                if (!lastArray[0].isEmpty() && lastArray[0].size() > 0) {
+                    cartansionParam.add(lastArray[0]);
+                }
+                if (!lastArray[1].isEmpty() && lastArray[1].size() > 0) {
+                    cartansionParam.add(lastArray[1]);
+                }
+                if (!other.isEmpty()) {
+                    cartansionParam.add(other);
+                }
+                List<String> result = CartesianProduct.cartesionProduct(cartansionParam);
+                result.remove(rootMap.getOriginalWord());
                 keywords.addAll(result);
                 sum = +keywords.size();
             }
-            //deductionType.setKeywords(keywords);
+            deductionType.setKeywords(keywords);
         }
         //3.结果封装
         DeductionResult deductionResult = new DeductionResult();
@@ -146,13 +194,26 @@ public class DeductionServiceImpl extends BaseService implements IDeductionServi
         Set<String> rootKey = getRootKey(deductionTypes);
 
         for (String key : rootKey) {
+            String newKey = key;
+
             //需要适配成图数据库的关系类型，调用图数据库操作服务
             if ("F".equalsIgnoreCase(key) || "M".equalsIgnoreCase(key)) {
                 for (int i = 1; i <= rootMap.getFamilyNum(); i++) {
                     rootMap.putRoot(key + i, rootMap.getFamilyList().get(i - 1));
                 }
+            } else if ("F`".equalsIgnoreCase(key)) {
+                for (int i = 1; i <= rootMap.getFamilyNum(); i++) {
+                    newKey = key + i;
+                    rootMap.getFamilyList().get(i - 1);
+                }
+            } else if ("M`".equalsIgnoreCase(key)) {
+                for (int i = 1; i <= rootMap.getLastNum(); i++) {
+                    newKey = key + i;
+                    rootMap.getLastList().get(i - 1);
+                }
             } else {
-                //调用知识操作服务
+//                ，A-称谓词，D-负面词，R-关系词，P-前缀词，头衔词-T
+//                ENR
             }
 
         }

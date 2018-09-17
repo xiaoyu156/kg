@@ -20,7 +20,7 @@ public interface Constant {
     /**
      * 演绎元素分割符
      */
-    String DEDUCTION_ELEMENT_SEPARATOR = "|";
+    String DEDUCTION_ELEMENT_SEPARATOR = ",";
 
 
 }

@@ -37,5 +37,5 @@ public class DeductionType {
     private Set<DeductionRule> deductionRuleSet = new HashSet<>();
 
     @Transient
-    private List<DeductionWord> keywords = new ArrayList<>();
+    private List<String> keywords = new ArrayList<>();
 }

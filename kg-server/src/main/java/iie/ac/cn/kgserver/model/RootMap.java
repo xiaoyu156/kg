@@ -3,6 +3,7 @@ package iie.ac.cn.kgserver.model;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public class RootMap {
     /**
      * 变异字根存储
      */
-    private Map<String, Object> roots;
+    private Map<String, Object> roots=new HashMap<>();
 
     /**
      * 姓集合

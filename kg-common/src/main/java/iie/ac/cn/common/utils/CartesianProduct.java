@@ -19,6 +19,8 @@ public class CartesianProduct {
      * @date 2018/9/10 0010 上午 9:20
      */
     public static List<String> cartesionProduct(List<List<String>> listList) {
+        System.out.println(listList);
+        System.out.println("listSize:"+listList.size());
         List<String> result = new ArrayList<>();
         for (int i = 0; i < listList.size(); i++) {
             List<String> tempList = listList.get(i);

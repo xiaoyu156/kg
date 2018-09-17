@@ -31,7 +31,6 @@ public class PdfUtil {
             String content = textStripper.getText(pdDocument);
             //通过换行符分割成list
             result = Arrays.asList(StringUtils.strip(content).trim().split("\r"));
-            System.out.println(result.size());
         } catch (IOException e) {
             e.printStackTrace();
             log.error("pdf读取失败", e);
